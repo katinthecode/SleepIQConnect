@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class Authentication:
+class Authentication_Token:
     access_token: str
     id_token: str
     refresh_token: str
@@ -15,6 +15,24 @@ class Authentication:
         
     def __str__(self):
         return f'Access Token: {self.access_token}\nID Token: {self.id_token}\nRefresh Token: {self.refresh_token}\nExpires In: {self.expires_in}'
+
+@dataclass
+class Authentication_Login:
+    user_id: str
+    key: str
+    registration_state: int
+    edp_login_status: int
+    edp_login_message: str
+    
+    def __init__(self, json):
+        self.user_id = json['userId']
+        self.key = json['key']
+        self.registration_state = json['registrationState']
+        self.edp_login_status = json['edpLoginStatus']
+        self.edp_login_message = json['edpLoginMessage']
+        
+    def __str__(self):
+        return f'User ID: {self.user_id}\nKey: {self.key}\nRegistration State: {self.registration_state}\nEDP Login Status: {self.edp_login_status}\nEDP Login Message: {self.edp_login_message}'
         
 @dataclass
 class Sleeper:
