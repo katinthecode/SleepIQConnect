@@ -4,7 +4,7 @@ import requests
 
 from dotenv import load_dotenv
 
-from data import Authentication_Token, Sleeper
+from data import Authentication_Login, Authentication_Token, Sleeper
 
 load_dotenv()
 
@@ -24,12 +24,27 @@ def get_authorization_token():
         print('Error: ' + str(response.status_code))
         print(response.text)
         exit()
+    
+    return Authentication_Token(response.json())
+
+def get_authorization_login():
+    login_endpoint = '/login'
+    payload = {
+        'login': os.getenv('EMAIL'),
+        'password': os.getenv('PASSWORD')
+    }
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.request('PUT', f'{os.getenv('URL')}{login_endpoint}', headers=headers, data=json.dumps(payload))
+    
+    if response.status_code < 200 or response.status_code >= 300:
+        print('Error: ' + str(response.status_code))
+        print(response.text)
+        exit()
         
-    json_response = response.json()
-    
-    auth = Authentication_Token(json_response)
-    
-    return auth
+    return Authentication_Login(response.json(), response.cookies)
 
 def get_sleepers(auth):
     sleeper_endpoint = '/sleeper'
@@ -56,8 +71,5 @@ def get_sleepers(auth):
     return sleepers
 
 if __name__ == '__main__':
-    auth = get_authorization_token()
-    sleepers = get_sleepers(auth)
-    
-    for sleeper in sleepers:
-        print(str(sleeper))
+    auth = get_authorization_login()
+    print(str(auth))

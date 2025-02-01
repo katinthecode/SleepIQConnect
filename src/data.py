@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from requests.cookies import RequestsCookieJar
 
 @dataclass
 class Authentication_Token:
@@ -14,7 +15,10 @@ class Authentication_Token:
         self.expires_in = json['data']['ExpiresIn']
         
     def __str__(self):
-        return f'Access Token: {self.access_token}\nID Token: {self.id_token}\nRefresh Token: {self.refresh_token}\nExpires In: {self.expires_in}'
+        return f'''Access Token: {self.access_token}
+                    ID Token: {self.id_token}
+                    Refresh Token: {self.refresh_token}
+                    Expires In: {self.expires_in}'''
 
 @dataclass
 class Authentication_Login:
@@ -23,16 +27,22 @@ class Authentication_Login:
     registration_state: int
     edp_login_status: int
     edp_login_message: str
+    cookies: RequestsCookieJar
     
-    def __init__(self, json):
+    def __init__(self, json, cookies):
         self.user_id = json['userId']
         self.key = json['key']
         self.registration_state = json['registrationState']
         self.edp_login_status = json['edpLoginStatus']
         self.edp_login_message = json['edpLoginMessage']
+        self.cookies = cookies
         
     def __str__(self):
-        return f'User ID: {self.user_id}\nKey: {self.key}\nRegistration State: {self.registration_state}\nEDP Login Status: {self.edp_login_status}\nEDP Login Message: {self.edp_login_message}'
+        return f'''User ID: {self.user_id}\nKey: {self.key}
+                    Registration State: {self.registration_state}
+                    EDP Login Status: {self.edp_login_status}
+                    EDP Login Message: {self.edp_login_message}
+                    Cookies: {self.cookies}'''
         
 @dataclass
 class Sleeper:
@@ -58,4 +68,12 @@ class Sleeper:
         self.side = json['side']
         
     def __str__(self):
-        return f'Is Account Owner: {self.is_account_owner}\nActive: {self.active}\nUser Name: {self.user_name}\nFirst Name: {self.first_name}\nBed ID: {self.bed_id}\nSleeper ID: {self.sleeper_id}\nAccount ID: {self.account_id}\nLast Login: {self.last_login}\nSide: {self.side}'
+        return f'''Is Account Owner: {self.is_account_owner}
+                    Active: {self.active}
+                    User Name: {self.user_name}
+                    First Name: {self.first_name}
+                    Bed ID: {self.bed_id}
+                    Sleeper ID: {self.sleeper_id}
+                    Account ID: {self.account_id}
+                    Last Login: {self.last_login}
+                    Side: {self.side}'''
