@@ -1,5 +1,10 @@
 from dataclasses import dataclass
+from enum import Enum
 from requests.cookies import RequestsCookieJar
+
+class Side(Enum):
+    R = 0
+    L = 1
 
 @dataclass
 class Authentication_Token:
@@ -54,7 +59,7 @@ class Sleeper:
     sleeper_id: str
     account_id: str
     last_login: str
-    side: int
+    side: Side
     
     def __init__(self, json):
         self.is_account_owner = json['isAccountOwner']
@@ -65,7 +70,7 @@ class Sleeper:
         self.sleeper_id = json['sleeperId']
         self.account_id = json['accountId']
         self.last_login = json['lastLogin']
-        self.side = json['side']
+        self.side = Side(json['side'])
         
     def __str__(self):
         return f'''Is Account Owner: {self.is_account_owner}
@@ -105,3 +110,17 @@ class Responsive_Air_Settings:
                     Out Of Bed Timeout: {self.out_of_bed_timeout}
                     Poll Frequency: {self.poll_frequency}
                     Pref Sync State: {self.pref_sync_state}'''
+
+@dataclass
+class Sleep_Number_Settings:
+    sleep_number: int
+    side: Side
+    
+    def __init__(self, json):
+        self.sleep_number = json['sleepNumber']
+        self.side = Side[json['side']]
+        
+        
+    def __str__(self):
+        return f'''Sleep Number: {self.sleep_number}
+                    Side: {self.side}'''

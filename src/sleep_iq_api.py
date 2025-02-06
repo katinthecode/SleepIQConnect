@@ -4,7 +4,8 @@ import requests
 
 from dotenv import load_dotenv
 
-from data import Authentication_Login, Authentication_Token, Responsive_Air_Settings, Sleeper
+from data import Authentication_Login, Authentication_Token, Responsive_Air_Settings
+from data import Side, Sleeper, Sleep_Number_Settings
 
 load_dotenv()
 
@@ -87,7 +88,7 @@ def get_responsive_air_data(auth_login: Authentication_Login, bed_id: str):
         
     return Responsive_Air_Settings(response.json())
 
-def set_responsive_air_data(auth_login: Authentication_Login, bed_id: str):
+def enable_responsive_air(auth_login: Authentication_Login, bed_id: str):
     responsive_air_endpoint = f'/bed/{bed_id}/responsiveAir?_k={auth_login.key}'
     payload = {
         'EnabledAuto': 'enabled'
@@ -105,11 +106,38 @@ def set_responsive_air_data(auth_login: Authentication_Login, bed_id: str):
         print(response.text)
         exit()
         
-    print(response.text)
+    return True
+
+def get_sleep_number_settings(auth_login: Authentication_Login, bed_id: str, side: Side):
+    sleep_number_endpoint = f'/bed/{bed_id}/sleepNumber?_k={auth_login.key}&side={side.name}'
+    payload = {}
+    headers = {
+        'Accept': 'application/json'
+    }
+    
+    response = requests.request('GET', f'{os.getenv('URL')}{sleep_number_endpoint}', 
+                                headers=headers, data=payload, cookies=auth_login.cookies)
+    
+    if response.status_code < 200 or response.status_code >= 300:
+        print('Error: ' + str(response.status_code))
+        print(response.text)
+        exit()
+        
+    return Sleep_Number_Settings(response.json())
+    
+
 
 if __name__ == '__main__':
     auth_token = get_authorization_token()
-    sleepers = get_sleepers(auth_token)
     auth_login = get_authorization_login()
-    set_responsive_air_data(auth_login, sleepers[0].bed_id)
     
+    sleepers = get_sleepers(auth_token)
+        
+    for sleeper in sleepers:
+        print(sleeper)
+        
+        sleep_number_settings = get_sleep_number_settings(auth_login, sleeper.bed_id, sleeper.side)
+        print(sleep_number_settings)
+        
+        print('---------------------------')
+        
