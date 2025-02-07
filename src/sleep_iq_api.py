@@ -94,7 +94,6 @@ def enable_responsive_air(auth_login: Authentication_Login, bed_id: str):
         'EnabledAuto': 'enabled'
     }
     headers = {
-        'Accept': 'application/json',
         'Content-Type': 'application/json'
     }
     
@@ -108,12 +107,25 @@ def enable_responsive_air(auth_login: Authentication_Login, bed_id: str):
         
     return True
 
-def get_sleep_number_settings(auth_login: Authentication_Login, bed_id: str, side: Side):
-    sleep_number_endpoint = f'/bed/{bed_id}/sleepNumber?_k={auth_login.key}&side={side.name}'
+def set_pump_to_idle(auth_login: Authentication_Login, bed_id: str):
+    pump_to_idle_endpoint = f'/bed/{bed_id}/pump/forceIdle?_k={auth_login.key}'
     payload = {}
-    headers = {
-        'Accept': 'application/json'
-    }
+    headers = {}
+    
+    response = requests.request('PUT', f'{os.getenv('URL')}{pump_to_idle_endpoint}', 
+                                headers=headers, data=payload, cookies=auth_login.cookies)
+    
+    if response.status_code < 200 or response.status_code >= 300:
+        print('Error: ' + str(response.status_code))
+        print(response.text)
+        exit()
+        
+    return True
+
+def get_sleep_number_settings(auth_login: Authentication_Login, bed_id: str, side: Side):
+    sleep_number_endpoint = f'/bed/{bed_id}/sleepNumber?_k={auth_login.key}&side={side.value}'
+    payload = {}
+    headers = {}
     
     response = requests.request('GET', f'{os.getenv('URL')}{sleep_number_endpoint}', 
                                 headers=headers, data=payload, cookies=auth_login.cookies)
@@ -125,9 +137,32 @@ def get_sleep_number_settings(auth_login: Authentication_Login, bed_id: str, sid
         
     return Sleep_Number_Settings(response.json())
     
-
-
-if __name__ == '__main__':
+def set_to_sleep_number(auth_login: Authentication_Login, bed_id: str, side: Side, sleep_number: int):
+    if set_pump_to_idle(auth_login, bed_id) != True:
+        print('Error setting pump to idle')
+        exit()
+    
+    responsive_air_endpoint = f'/bed/{bed_id}/sleepNumber?_k={auth_login.key}'
+    payload = {
+        'side': side.value,
+        'sleepNumber': sleep_number
+    }
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.request('PUT', f'{os.getenv('URL')}{responsive_air_endpoint}', 
+                                headers=headers, data=json.dumps(payload), cookies=auth_login.cookies)
+    
+    if response.status_code < 200 or response.status_code >= 300:
+        print('Error: ' + str(response.status_code))
+        print(response.text)
+        exit()
+    
+    print('Sleep Number set to ' + str(sleep_number))
+    return True
+    
+def print_bed_details():
     auth_token = get_authorization_token()
     auth_login = get_authorization_login()
     
@@ -138,6 +173,17 @@ if __name__ == '__main__':
         
         sleep_number_settings = get_sleep_number_settings(auth_login, sleeper.bed_id, sleeper.side)
         print(sleep_number_settings)
-        
-        print('---------------------------')
-        
+        print()
+    
+def refill_to_sleep_number():
+    auth_token = get_authorization_token()
+    auth_login = get_authorization_login()
+    
+    sleepers = get_sleepers(auth_token)
+    
+    for sleeper in sleepers:
+        sleep_number_settings = get_sleep_number_settings(auth_login, sleeper.bed_id, sleeper.side)
+        set_to_sleep_number(auth_login, sleeper.bed_id, sleeper.side, sleep_number_settings.sleep_number)
+    
+if __name__ == '__main__':
+    refill_to_sleep_number()

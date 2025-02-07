@@ -3,8 +3,8 @@ from enum import Enum
 from requests.cookies import RequestsCookieJar
 
 class Side(Enum):
-    R = 0
-    L = 1
+    RIGHT = 'R'
+    LEFT = 'L'
 
 @dataclass
 class Authentication_Token:
@@ -59,7 +59,15 @@ class Sleeper:
     sleeper_id: str
     account_id: str
     last_login: str
+    side_id: int
     side: Side
+    
+    def get_side_from_id(self):
+        match self.side_id:
+            case 0:
+                return Side.RIGHT
+            case 1:
+                return Side.LEFT
     
     def __init__(self, json):
         self.is_account_owner = json['isAccountOwner']
@@ -70,7 +78,8 @@ class Sleeper:
         self.sleeper_id = json['sleeperId']
         self.account_id = json['accountId']
         self.last_login = json['lastLogin']
-        self.side = Side(json['side'])
+        self.side_id = json['side']
+        self.side = self.get_side_from_id()
         
     def __str__(self):
         return f'''Is Account Owner: {self.is_account_owner}
@@ -118,7 +127,7 @@ class Sleep_Number_Settings:
     
     def __init__(self, json):
         self.sleep_number = json['sleepNumber']
-        self.side = Side[json['side']]
+        self.side = Side(json['side'])
         
         
     def __str__(self):
