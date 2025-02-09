@@ -121,6 +121,55 @@ class Responsive_Air_Settings:
                     Pref Sync State: {self.pref_sync_state}'''
 
 @dataclass
+class Side_Data:
+    side: Side
+    is_in_bed: bool
+    alert_detailed_message: str
+    sleep_number: int
+    alert_id: int
+    last_link: str
+    pressure: int
+    
+    def __init__(self, side, json):
+        self.side = Side(side)
+        self.is_in_bed = json['isInBed']
+        self.alert_detailed_message = json['alertDetailedMessage']
+        self.sleep_number = json['sleepNumber']
+        self.alert_id = json['alertId']
+        self.last_link = json['lastLink']
+        self.pressure = json['pressure']
+        
+    def __str__(self):
+        return f'''Side: {self.side}
+                    Is In Bed: {self.is_in_bed}
+                    Alert Detailed Message: {self.alert_detailed_message}
+                    Sleep Number: {self.sleep_number}
+                    Alert ID: {self.alert_id}
+                    Last Link: {self.last_link}
+                    Pressure: {self.pressure}'''
+
+@dataclass
+class Bed_Status:
+    status: int
+    bed_id: str
+    left_side: Side_Data
+    right_side: Side_Data
+    
+    def __init__(self, json):
+        self.status = json['status']
+        self.bed_id = json['bedId']
+        self.left_side = Side_Data(Side.LEFT, json['leftSide'])
+        self.right_side = Side_Data(Side.RIGHT, json['rightSide'])
+        
+    def __str__(self):
+        return f'''Status: {self.status}
+                    Bed ID: {self.bed_id}
+                    Left Side: 
+                    {self.left_side}
+                    Right Side: 
+                    {self.right_side}'''
+
+@dataclass
 class Sleep_Number_Settings:
     sleep_number: int
     side: Side
