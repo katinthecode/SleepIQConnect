@@ -11,61 +11,17 @@ from data import (
     AuthenticationToken,
     BedStatus,
     ResponsiveAirSettings,
+    Side,
+    Sleeper,
+    SleepNumberSettings,
 )
-from data import Side, Sleeper, SleepNumberSettings
 
 load_dotenv()
 
-
-def get_authorization_token():
-    """Get the authorization token from the SleepIQ API"""
-    headers = {"Content-Type": "application/json"}
-    payload = {
-        "ClientID": os.getenv("CLIENT_ID"),
-        "Email": os.getenv("EMAIL"),
-        "Password": os.getenv("PASSWORD"),
-    }
-
-    response = requests.request(
-        "POST",
-        os.getenv("TOKEN_URL"),
-        headers=headers,
-        data=json.dumps(payload),
-        timeout=30,
-    )
-
-    if response.status_code < 200 or response.status_code >= 300:
-        print("Error: " + str(response.status_code))
-        print(response.text)
-        exit()
-
-    return AuthenticationToken(response.json())
+api_url = os.getenv("URL")
 
 
-def get_authorization_login():
-    """Get the authorization login from the SleepIQ API"""
-
-    login_endpoint = "/login"
-    headers = {"Content-Type": "application/json"}
-    payload = {"login": os.getenv("EMAIL"), "password": os.getenv("PASSWORD")}
-
-    response = requests.request(
-        "PUT",
-        f"{os.getenv('URL')}{login_endpoint}",
-        headers=headers,
-        data=json.dumps(payload),
-        timeout=30,
-    )
-
-    if response.status_code < 200 or response.status_code >= 300:
-        print("Error: " + str(response.status_code))
-        print(response.text)
-        exit()
-
-    return AuthenticationLogin(response.json(), response.cookies)
-
-
-def get_sleepers(auth_token):
+def get_sleepers(auth_token: AuthenticationToken):
     """Get sleepers data from the SleepIQ API"""
 
     sleeper_endpoint = "/sleeper"
@@ -76,7 +32,7 @@ def get_sleepers(auth_token):
 
     response = requests.request(
         "GET",
-        f"{os.getenv('URL')}{sleeper_endpoint}",
+        f"{api_url}{sleeper_endpoint}",
         headers=headers,
         data=json.dumps(payload),
         timeout=30,
@@ -106,7 +62,7 @@ def get_bed_status(auth_login: AuthenticationLogin):
 
     response = requests.request(
         "GET",
-        f"{os.getenv('URL')}{bed_status_endpoint}",
+        f"{api_url}{bed_status_endpoint}",
         headers=headers,
         data=payload,
         cookies=auth_login.cookies,
@@ -131,7 +87,7 @@ def get_responsive_air_data(auth_login: AuthenticationLogin, bed_id: str):
 
     response = requests.request(
         "GET",
-        f"{os.getenv('URL')}{responsive_air_endpoint}",
+        f"{api_url}{responsive_air_endpoint}",
         headers=headers,
         data=payload,
         cookies=auth_login.cookies,
@@ -156,7 +112,7 @@ def enable_responsive_air(auth_login: AuthenticationLogin, bed_id: str):
 
     response = requests.request(
         "PUT",
-        f"{os.getenv('URL')}{responsive_air_endpoint}",
+        f"{api_url}{responsive_air_endpoint}",
         headers=headers,
         data=json.dumps(payload),
         cookies=auth_login.cookies,
@@ -181,7 +137,7 @@ def set_pump_to_idle(auth_login: AuthenticationLogin, bed_id: str):
 
     response = requests.request(
         "PUT",
-        f"{os.getenv('URL')}{pump_to_idle_endpoint}",
+        f"{api_url}{pump_to_idle_endpoint}",
         headers=headers,
         data=payload,
         cookies=auth_login.cookies,
@@ -208,7 +164,7 @@ def get_sleep_number_settings(auth_login: AuthenticationLogin, bed_id: str, side
 
     response = requests.request(
         "GET",
-        f"{os.getenv('URL')}{sleep_number_endpoint}",
+        f"{api_url}{sleep_number_endpoint}",
         headers=headers,
         data=payload,
         cookies=auth_login.cookies,
@@ -239,7 +195,7 @@ def set_to_sleep_number(
 
     response = requests.request(
         "PUT",
-        f"{os.getenv('URL')}{responsive_air_endpoint}",
+        f"{api_url}{responsive_air_endpoint}",
         headers=headers,
         data=json.dumps(payload),
         cookies=auth_login.cookies,
@@ -253,38 +209,3 @@ def set_to_sleep_number(
 
     print("Sleep Number set to " + str(sleep_number))
     return True
-
-
-def print_bed_details():
-    """Print bed details"""
-
-    auth_token = get_authorization_token()
-    auth_login = get_authorization_login()
-
-    sleepers = get_sleepers(auth_token)
-
-    for sleeper in sleepers:
-        print(sleeper)
-
-        sleep_number_settings = get_sleep_number_settings(
-            auth_login, sleeper.bed_id, sleeper.side
-        )
-        print(sleep_number_settings)
-        print()
-
-
-def refill_to_sleep_number():
-    """Sets each side to sleep number"""
-
-    auth_token = get_authorization_token()
-    auth_login = get_authorization_login()
-
-    sleepers = get_sleepers(auth_token)
-
-    for sleeper in sleepers:
-        sleep_number_settings = get_sleep_number_settings(
-            auth_login, sleeper.bed_id, sleeper.side
-        )
-        set_to_sleep_number(
-            auth_login, sleeper.bed_id, sleeper.side, sleep_number_settings.sleep_number
-        )
