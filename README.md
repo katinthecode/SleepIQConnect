@@ -1,15 +1,15 @@
 # SleepIQConnect
-
-Connects to Sleep Number Sleep IQ API
-
-Setup 
-
-Requires 
-Requests library 
-
-.env file containg
-"URL" - API URL
-TOKEN_URL - Authentication URL
-CLIENT_ID - Account ID
-EMAIL - User email 
-PASSWORD - User password 
+<br>
+Connects to Sleep Number Sleep IQ API<br>
+<br>
+Setup<br>
+<br>
+Requires<br>
+Requests library<br>
+<br>
+.env file containg<br>
+"URL" - API URL<br>
+TOKEN_URL - Authentication URL<br>
+CLIENT_ID - Account ID<br>
+EMAIL - User email<br>
+PASSWORD - User password<br>
